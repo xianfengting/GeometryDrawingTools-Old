@@ -36,10 +36,13 @@ class AppMainActivity : AppCompatActivity(), Serializable {
     private val broadcastReceiver = MyBroadcastReceiver(this)
     private val activityInitializingThread = Thread {
         fun doProgress() {
-            for (i in 1..100) {
-                Thread.sleep(50)
+            for (i in 0..99) {
+                for (j in 0..99) {
+                    Thread.sleep(1)
+                    updateSubprogramName("进度:$j")
+                    updateSubprogramProgress(j)
+                }
                 updateTaskProgress(i)
-                updateSubprogramName("进度:$i")
             }
         }
         // Wait for mainSurfaceViewHolder to be created and TaskExecutionActivity to be initialized.
@@ -118,6 +121,14 @@ class AppMainActivity : AppCompatActivity(), Serializable {
         Intent(TaskExecutionActivity.ACTION__TASK).let {
             it.addCategory(TaskExecutionActivity.CATEGORY__UPDATE_SUBPROGRAM)
             it.putExtra(TaskExecutionActivity.EXTRA__SUBPROGRAM_NAME, name)
+            sendBroadcast(it)
+        }
+    }
+
+    private fun updateSubprogramProgress(progress: Int) {
+        Intent(TaskExecutionActivity.ACTION__TASK).let {
+            it.addCategory(TaskExecutionActivity.CATEGORY__UPDATE_SUBPROGRAM)
+            it.putExtra(TaskExecutionActivity.EXTRA__SUBPROGRAM_PROGRESS, progress)
             sendBroadcast(it)
         }
     }

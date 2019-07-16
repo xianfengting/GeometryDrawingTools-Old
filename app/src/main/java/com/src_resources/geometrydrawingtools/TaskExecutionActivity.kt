@@ -19,6 +19,7 @@ class TaskExecutionActivity : AppCompatActivity() {
         const val EXTRA__TASK_NAME = "extra_taskName"
         const val EXTRA__PROGRESS = "extra_progress"
         const val EXTRA__SUBPROGRAM_NAME = "extra_subprogramName"
+        const val EXTRA__SUBPROGRAM_PROGRESS = "extra_subprogramProgress"
 
         //
         // Constant values for broadcast actions and categories
@@ -37,7 +38,8 @@ class TaskExecutionActivity : AppCompatActivity() {
         //
         private const val MESSAGE_WHAT__UPDATE_PROGRESS = 1
         private const val MESSAGE_WHAT__UPDATE_SUBPROGRAM_NAME = 2
-        private const val MESSAGE_WHAT__EXIT = 3
+        private const val MESSAGE_WHAT__UPDATE_SUBPROGRAM_PROGRESS = 3
+        private const val MESSAGE_WHAT__EXIT = 4
     }
 
     private class MyHandler(outerClassObj: TaskExecutionActivity) : Handler() {
@@ -55,8 +57,13 @@ class TaskExecutionActivity : AppCompatActivity() {
                     outerClassObj.taskProgressBar.progress = progress
                 }
                 MESSAGE_WHAT__UPDATE_SUBPROGRAM_NAME -> {
-                    val name = msg.data.getString(EXTRA__SUBPROGRAM_NAME, "")
+                    val name = msg.data.getString(EXTRA__SUBPROGRAM_NAME,
+                            outerClassObj.currentSubprogramTextView.text.toString())
                     outerClassObj.currentSubprogramTextView.text = name
+                }
+                MESSAGE_WHAT__UPDATE_SUBPROGRAM_PROGRESS -> {
+                    val progress = msg.arg1
+                    outerClassObj.currentSubprogramProgressBar.progress = progress
                 }
                 MESSAGE_WHAT__EXIT -> {
                     outerClassObj.exit()
@@ -75,7 +82,9 @@ class TaskExecutionActivity : AppCompatActivity() {
             }
             if (intent.categories.contains(CATEGORY__UPDATE_SUBPROGRAM)) {
                 val name = intent.getStringExtra(EXTRA__SUBPROGRAM_NAME)
+                val progress = intent.getIntExtra(EXTRA__SUBPROGRAM_PROGRESS, 0)
                 outerClassObj.updateSubprogramName(name)
+                outerClassObj.updateSubprogramProgress(progress)
             }
             if (intent.categories.contains(CATEGORY__FINISH)) {
                 outerClassObj.exit()
@@ -86,6 +95,7 @@ class TaskExecutionActivity : AppCompatActivity() {
     private lateinit var taskNameTextView: TextView
     private lateinit var taskProgressBar: ProgressBar
     private lateinit var currentSubprogramTextView: TextView
+    private lateinit var currentSubprogramProgressBar: ProgressBar
 
     private val handler = MyHandler(this)
     private val broadcastReceiver = MyBroadcastReceiver(this)
@@ -100,6 +110,7 @@ class TaskExecutionActivity : AppCompatActivity() {
         taskNameTextView.text = intent.getStringExtra(EXTRA__TASK_NAME)
         taskProgressBar = findViewById(R.id.taskProgressBar)
         currentSubprogramTextView = findViewById(R.id.currentSubprogramTextView)
+        currentSubprogramProgressBar = findViewById(R.id.currentSubprogramProgressBar)
 
         registerMyBroadcastReceiver()
 
@@ -135,11 +146,18 @@ class TaskExecutionActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateSubprogramName(name: String) {
+    private fun updateSubprogramName(name: String?) {
         val bundle = Bundle()
         bundle.putString(EXTRA__SUBPROGRAM_NAME, name)
         handler.obtainMessage(MESSAGE_WHAT__UPDATE_SUBPROGRAM_NAME).let {
             it.data = bundle
+            handler.sendMessage(it)
+        }
+    }
+
+    private fun updateSubprogramProgress(progress: Int) {
+        handler.obtainMessage(MESSAGE_WHAT__UPDATE_SUBPROGRAM_PROGRESS).let {
+            it.arg1 = progress
             handler.sendMessage(it)
         }
     }
