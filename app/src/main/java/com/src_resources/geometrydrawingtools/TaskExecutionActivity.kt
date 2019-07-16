@@ -1,5 +1,9 @@
 package com.src_resources.geometrydrawingtools
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.*
 import android.support.v7.app.AppCompatActivity
 import android.widget.ProgressBar
@@ -16,7 +20,15 @@ class TaskExecutionActivity : AppCompatActivity() {
         //
         const val EXTRA__TASK_NAME = "extra_taskName"
 //        const val EXTRA__TASK_CALLABLE = "extra_taskCallable"
-        const val EXTRA__TASK_EXECUTION_HANDLE = "extra_taskExecutionHandle"
+//        const val EXTRA__TASK_EXECUTION_HANDLE = "extra_taskExecutionHandle"
+        const val EXTRA__PROGRESS = "extra_progress"
+
+        //
+        // Constant values for broadcast actions and categories
+        //
+        const val ACTION__TASK = "com.src_resources.geometrydrawingtools.TaskExecutionActivity.ACTION__TASK"
+        const val CATEGORY__UPDATE_PROGRESS = "com.src_resources.geometrydrawingtools.TaskExecutionActivity.CATEGORY__UPDATE_PROGRESS"
+        const val CATEGORY__FINISH = "com.src_resources.geometrydrawingtools.TaskExecutionActivity.CATEGORY__FINISH"
 
         //
         // Constant values for Message.what
@@ -108,6 +120,20 @@ class TaskExecutionActivity : AppCompatActivity() {
         }
     }
 
+    private class MyBroadcastReceiver(val outerClassObj: TaskExecutionActivity) : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent == null)
+                throw IllegalArgumentException("Argument \"intent\" is null.")
+            if (intent.categories.contains(CATEGORY__UPDATE_PROGRESS)) {
+                val progress = intent.getIntExtra(EXTRA__PROGRESS, 0)
+                outerClassObj.updateProgress(progress)
+            }
+            if (intent.categories.contains(CATEGORY__FINISH)) {
+                outerClassObj.exit()
+            }
+        }
+    }
+
 //    private inner class TaskThread : Thread() {
 //        init {
 //            name = "TaskThread-$id"
@@ -126,6 +152,7 @@ class TaskExecutionActivity : AppCompatActivity() {
 //    private lateinit var taskExecutionHandleObj: TaskExecutionHandle
     private val handler = MyHandler(this)
 //    private val taskThread = TaskThread()
+    private val broadcastReceiver = MyBroadcastReceiver(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -145,11 +172,32 @@ class TaskExecutionActivity : AppCompatActivity() {
 //                        updateProgress(progress)
 //                    }
 //                })
-        val applicationObj = application as MainApplication
-        applicationObj.activityExtra_TaskExecutionActivity_taskProgressUpdatingFunc = this::updateProgress
-        applicationObj.activityExtra_TaskExecutionActivity_taskFinishingFunc = this::exit
+//        val applicationObj = application as MainApplication
+//        applicationObj.activityExtra_TaskExecutionActivity_taskProgressUpdatingFunc = this::updateProgress
+//        applicationObj.activityExtra_TaskExecutionActivity_taskFinishingFunc = this::exit
 
 //        taskThread.start()
+    }
+
+    override fun onResume() {
+        registerMyBroadcastReceiver()
+        super.onResume()
+    }
+
+    override fun onPause() {
+        unregisterMyBroadcastReceiver()
+        super.onPause()
+    }
+
+    private fun registerMyBroadcastReceiver() {
+        val filter = IntentFilter(ACTION__TASK)
+        filter.addCategory(CATEGORY__UPDATE_PROGRESS)
+        filter.addCategory(CATEGORY__FINISH)
+        registerReceiver(broadcastReceiver, filter)
+    }
+
+    private fun unregisterMyBroadcastReceiver() {
+        unregisterReceiver(broadcastReceiver)
     }
 
     private fun updateProgress(progress: Int) {

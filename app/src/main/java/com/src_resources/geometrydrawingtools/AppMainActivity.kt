@@ -4,9 +4,11 @@ import android.content.Intent
 import android.graphics.*
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import java.io.Serializable
+import java.util.concurrent.locks.LockSupport
 
 //private val WIDTH = 768
 //private val HEIGHT = 320
@@ -33,10 +35,18 @@ class AppMainActivity : AppCompatActivity(), Serializable {
 //    private var lastY = 0f
 //    private var cx = X_OFFSET
 //    private val centerY = HEIGHT / 2
-//    private val handler = Handler()
+    private val handler = Handler()
 //    private val taskHandle = TaskExecutionActivity.TaskExecutionHandle()
-    private lateinit var taskProgressUpdatingFunc: (Int) -> Unit
-    private lateinit var taskFinishingFunc: () -> Unit
+//    private lateinit var taskProgressUpdatingFunc: (Int) -> Unit
+//    private lateinit var taskFinishingFunc: () -> Unit
+    private val activityInitializingThread = Thread {
+        // Wait for mainSurfaceViewHolder to be created.
+        LockSupport.park()
+        // Call mainSurfaceView initializing method.
+        initMainSurfaceView()
+        // Finish the task.
+        finishTask()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +57,7 @@ class AppMainActivity : AppCompatActivity(), Serializable {
         mainSurfaceViewHolder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceCreated(holder: SurfaceHolder?) {
                 hasSurface = true
+                LockSupport.unpark(activityInitializingThread)
             }
 
             override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
@@ -81,24 +92,34 @@ class AppMainActivity : AppCompatActivity(), Serializable {
 //        intentObj.putExtra(TaskExecutionActivity.EXTRA__TASK_EXECUTION_HANDLE, taskHandle)
         startActivity(intentObj)
 
-        Thread {
-            Thread.sleep(2000)
-            taskProgressUpdatingFunc = (application as MainApplication).activityExtra_TaskExecutionActivity_taskProgressUpdatingFunc
-                    ?: throw IllegalStateException("TaskExecutionActivity didn't attach callback functions.")
-            taskFinishingFunc = (application as MainApplication).activityExtra_TaskExecutionActivity_taskFinishingFunc
-                    ?: throw IllegalStateException("TaskExecutionActivity didn't attach callback functions.")
-            for (i in 1..100) {
-                taskProgressUpdatingFunc(i)
-                Thread.sleep(100)
-            }
-            taskFinishingFunc()
-        }.start()
+        activityInitializingThread.start()
     }
 
     private fun initMainSurfaceView() {
         val canvas = mainSurfaceViewHolder.lockCanvas()
         canvas.drawColor(Color.WHITE)
         mainSurfaceViewHolder.unlockCanvasAndPost(canvas)
+    }
+
+    private fun updateTaskProgress(progress: Int) {
+        Intent().let {
+            it.action = TaskExecutionActivity.ACTION__TASK
+            // Please note that it's wrong to write like:
+            // it.categories.add(TaskExecutionActivity.CATEGORY__UPDATE_PROGRESS)
+            it.addCategory(TaskExecutionActivity.CATEGORY__UPDATE_PROGRESS)
+            it.putExtra(TaskExecutionActivity.EXTRA__PROGRESS, progress)
+            sendBroadcast(it)
+        }
+    }
+
+    private fun finishTask() {
+        Intent().let {
+            it.action = TaskExecutionActivity.ACTION__TASK
+            // Please note that it's wrong to write like:
+            // it.categories.add(TaskExecutionActivity.CATEGORY__FINISH)
+            it.addCategory(TaskExecutionActivity.CATEGORY__FINISH)
+            sendBroadcast(it)
+        }
     }
 
 //    private fun doActivityCreatingTask() {
