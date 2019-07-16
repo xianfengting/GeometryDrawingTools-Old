@@ -81,16 +81,13 @@ class TaskExecutionActivity : AppCompatActivity() {
         taskNameTextView = findViewById(R.id.taskNameTextView)
         taskNameTextView.text = intent.getStringExtra(EXTRA__TASK_NAME)
         taskProgressBar = findViewById(R.id.taskProgressBar)
-    }
 
-    override fun onResume() {
         registerMyBroadcastReceiver()
-        super.onResume()
     }
 
-    override fun onPause() {
+    override fun onDestroy() {
         unregisterMyBroadcastReceiver()
-        super.onPause()
+        super.onDestroy()
     }
 
     private fun registerMyBroadcastReceiver() {
