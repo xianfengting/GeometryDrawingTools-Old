@@ -10,35 +10,14 @@ import android.view.SurfaceView
 import java.io.Serializable
 import java.util.concurrent.locks.LockSupport
 
-//private val WIDTH = 768
-//private val HEIGHT = 320
-//private val X_OFFSET = 5
-
 class AppMainActivity : AppCompatActivity(), Serializable {
-
-//    private class MyTaskCallable(val outerClassObj: AppMainActivity) : TaskExecutionActivity.TaskCallable() {
-//        companion object CREATOR : Parcelable.Creator<MyTaskCallable>
-//
-//        override fun call(): Boolean {
-//            Thread.sleep(2000)
-//            outerClassObj.initMainSurfaceView()
-//            return true
-//        }
-//    }
 
     private lateinit var mainSurfaceView: SurfaceView
     private var hasSurface = false
     private lateinit var mainSurfaceViewHolder: SurfaceHolder
     private lateinit var mPath: Path
     private lateinit var mPaint: Paint
-//    private var lastX = 0f
-//    private var lastY = 0f
-//    private var cx = X_OFFSET
-//    private val centerY = HEIGHT / 2
     private val handler = Handler()
-//    private val taskHandle = TaskExecutionActivity.TaskExecutionHandle()
-//    private lateinit var taskProgressUpdatingFunc: (Int) -> Unit
-//    private lateinit var taskFinishingFunc: () -> Unit
     private val activityInitializingThread = Thread {
         // Wait for mainSurfaceViewHolder to be created.
         LockSupport.park()
@@ -77,19 +56,9 @@ class AppMainActivity : AppCompatActivity(), Serializable {
         mPaint.strokeCap = Paint.Cap.ROUND
         mPaint.strokeJoin = Paint.Join.BEVEL
 
-//        doActivityCreatingTask()
         val intentObj = Intent(this, TaskExecutionActivity::class.java)
         intentObj.putExtra(TaskExecutionActivity.EXTRA__TASK_NAME,
                 resources.getString(R.string.launching))
-//        intentObj.putExtra(TaskExecutionActivity.EXTRA__TASK_CALLABLE,
-//                object : TaskExecutionActivity.TaskCallable() {
-//                    override fun call(): Boolean {
-//                        Thread.sleep(2000)
-//                        initMainSurfaceView()
-//                        return true
-//                    }
-//                })
-//        intentObj.putExtra(TaskExecutionActivity.EXTRA__TASK_EXECUTION_HANDLE, taskHandle)
         startActivity(intentObj)
 
         activityInitializingThread.start()
@@ -121,18 +90,4 @@ class AppMainActivity : AppCompatActivity(), Serializable {
             sendBroadcast(it)
         }
     }
-
-//    private fun doActivityCreatingTask() {
-//        Thread {
-//            Thread.sleep(2000)
-//            handler.post {
-//                val intentObj = Intent(this, TaskExecutionActivity::class.java)
-//                intentObj.putExtra(TaskExecutionActivity.EXTRA__TASK_NAME,
-//                        resources.getString(R.string.launching))
-//                intentObj.putExtra(TaskExecutionActivity.EXTRA__TASK_CALLABLE,
-//                        MyTaskCallable(this))
-//                startActivity(intent)
-//            }
-//        }.start()
-//    }
 }
