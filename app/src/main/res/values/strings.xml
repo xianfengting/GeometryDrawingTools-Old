@@ -2,4 +2,5 @@
     <string name="app_name">几何绘制工具(内部开发版)</string>
 
     <string name="launching">启动中</string>
+    <string name="inProgress">正在进行</string>
 </resources>

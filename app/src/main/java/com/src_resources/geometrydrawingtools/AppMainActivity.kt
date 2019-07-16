@@ -1,6 +1,9 @@
 package com.src_resources.geometrydrawingtools
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.*
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -12,17 +15,40 @@ import java.util.concurrent.locks.LockSupport
 
 class AppMainActivity : AppCompatActivity(), Serializable {
 
+    private class MyBroadcastReceiver(val outerClassObj: AppMainActivity) : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent == null)
+                throw IllegalArgumentException("Argument \"intent\" is null.")
+            when (intent.action) {
+                TaskExecutionActivity.ACTION__CALLBACK__ON_ACTIVITY_INITIALIZED -> {
+                    LockSupport.unpark(outerClassObj.activityInitializingThread)
+                }
+            }
+        }
+    }
+
     private lateinit var mainSurfaceView: SurfaceView
     private var hasSurface = false
     private lateinit var mainSurfaceViewHolder: SurfaceHolder
     private lateinit var mPath: Path
     private lateinit var mPaint: Paint
     private val handler = Handler()
+    private val broadcastReceiver = MyBroadcastReceiver(this)
     private val activityInitializingThread = Thread {
-        // Wait for mainSurfaceViewHolder to be created.
+        fun doProgress() {
+            for (i in 1..100) {
+                Thread.sleep(50)
+                updateTaskProgress(i)
+                updateSubprogramName("进度:$i")
+            }
+        }
+        // Wait for mainSurfaceViewHolder to be created and TaskExecutionActivity to be initialized.
+        LockSupport.park()
         LockSupport.park()
         // Call mainSurfaceView initializing method.
         initMainSurfaceView()
+        //
+        doProgress()
         // Finish the task.
         finishTask()
     }
@@ -62,6 +88,13 @@ class AppMainActivity : AppCompatActivity(), Serializable {
         startActivity(intentObj)
 
         activityInitializingThread.start()
+
+        registerMyBroadcastReceiver()
+    }
+
+    override fun onDestroy() {
+        unregisterMyBroadcastReceiver()
+        super.onDestroy()
     }
 
     private fun initMainSurfaceView() {
@@ -81,6 +114,14 @@ class AppMainActivity : AppCompatActivity(), Serializable {
         }
     }
 
+    private fun updateSubprogramName(name: String) {
+        Intent(TaskExecutionActivity.ACTION__TASK).let {
+            it.addCategory(TaskExecutionActivity.CATEGORY__UPDATE_SUBPROGRAM)
+            it.putExtra(TaskExecutionActivity.EXTRA__SUBPROGRAM_NAME, name)
+            sendBroadcast(it)
+        }
+    }
+
     private fun finishTask() {
         Intent().let {
             it.action = TaskExecutionActivity.ACTION__TASK
@@ -89,5 +130,14 @@ class AppMainActivity : AppCompatActivity(), Serializable {
             it.addCategory(TaskExecutionActivity.CATEGORY__FINISH)
             sendBroadcast(it)
         }
+    }
+
+    private fun registerMyBroadcastReceiver() {
+        val filter = IntentFilter(TaskExecutionActivity.ACTION__CALLBACK__ON_ACTIVITY_INITIALIZED)
+        registerReceiver(broadcastReceiver, filter)
+    }
+
+    private fun unregisterMyBroadcastReceiver() {
+        unregisterReceiver(broadcastReceiver)
     }
 }
