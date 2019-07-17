@@ -30,7 +30,7 @@ class TaskExecutionActivity : AppCompatActivity() {
                 "com.src_resources.geometrydrawingtools.TaskExecutionActivity.ACTION__CALLBACK__ON_ACTIVITY_INITIALIZED"
         const val CATEGORY__UPDATE_PROGRESS = "com.src_resources.geometrydrawingtools.TaskExecutionActivity.CATEGORY__UPDATE_PROGRESS"
         const val CATEGORY__FINISH = "com.src_resources.geometrydrawingtools.TaskExecutionActivity.CATEGORY__FINISH"
-        const val CATEGORY__UPDATE_SUBPROGRAM = "com.src_resources.geometrydrawingtools.TaskExecutionActivity.CATEGORY__CATEGORY__UPDATE_SUBPROGRAMH"
+        const val CATEGORY__UPDATE_SUBPROGRAM = "com.src_resources.geometrydrawingtools.TaskExecutionActivity.CATEGORY__CATEGORY__UPDATE_SUBPROGRAM"
         val ACTIONS = arrayOf(ACTION__TASK, ACTION__CALLBACK__ON_ACTIVITY_INITIALIZED)
         val CATEGORIES = arrayOf(CATEGORY__UPDATE_PROGRESS, CATEGORY__FINISH, CATEGORY__UPDATE_SUBPROGRAM)
 
