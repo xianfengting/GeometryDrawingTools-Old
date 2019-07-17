@@ -17,11 +17,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AppMainActivity">
-        </activity>
-        <activity android:name=".TaskExecutionActivity"
-            android:theme="@style/Theme.AppCompat.Dialog">
-        </activity>
+        <activity android:name=".AppMainActivity"></activity>
+        <activity
+            android:name=".TaskExecutionActivity"
+            android:theme="@style/Theme.AppCompat.Dialog"></activity>
+
+        <service
+            android:name=".GeometryManagerService"
+            android:enabled="true"
+            android:exported="false"></service>
     </application>
 
 </manifest>

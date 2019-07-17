@@ -1,10 +1,15 @@
 package com.src_resources.geometrydrawingtools
 
+import android.app.Service
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import kotlin.reflect.KClass
 
 class AppLaunchingActivity : AppCompatActivity() {
+
+    private val logTag = this::class.simpleName
 
     companion object {
         const val REQUEST_CODE_APP_MAIN_ACTIVITY = 0
@@ -13,6 +18,8 @@ class AppLaunchingActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_app_launching)
+
+        checkAndStartGeometryManagerService()
 
         // 延迟两秒启动 AppMainActivity 。
         object : Thread("AppMainActivity-LauncherThread") {
@@ -33,6 +40,17 @@ class AppLaunchingActivity : AppCompatActivity() {
             REQUEST_CODE_APP_MAIN_ACTIVITY -> {
                 // 结束当前 Activity （退出程序）。
                 finish()
+            }
+        }
+    }
+
+    private fun checkAndStartGeometryManagerService() {
+        val info = mainApplicationObj.serviceInfoMap[GeometryManagerService::class] ?: return
+        if (!info.isStarted) {
+            Log.i(logTag, "GeometryManagerService isn't started. Starting it...")
+            showShortDurationToast(R.string.toast_startingGeometryManagerService)
+            Intent(this, GeometryManagerService::class.java).let {
+                startService(it)
             }
         }
     }

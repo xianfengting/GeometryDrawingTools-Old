@@ -1,10 +1,22 @@
 package com.src_resources.geometrydrawingtools
 
+import android.app.Activity
 import android.app.Application
+import android.app.Service
+import kotlin.reflect.KClass
 
 class MainApplication : Application() {
-    //////////////////// Activity extra data ////////////////////
-    ////////// .TaskExecutionActivity //////////
-    var activityExtra_TaskExecutionActivity_taskProgressUpdatingFunc: ((Int) -> Unit)? = null
-    var activityExtra_TaskExecutionActivity_taskFinishingFunc: (() -> Unit)? = null
+
+    val serviceInfoMap = HashMap<KClass<out Service>, ServiceInfo>()
+
+    override fun onCreate() {
+        super.onCreate()
+        serviceInfoMap.put(GeometryManagerService::class, ServiceInfo())
+    }
 }
+
+val Service.mainApplicationObj: MainApplication
+        get() = application as MainApplication
+
+val Activity.mainApplicationObj: MainApplication
+    get() = application as MainApplication
