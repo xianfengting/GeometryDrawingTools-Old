@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.*
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.widget.ProgressBar
 import android.widget.TextView
 import java.lang.ref.WeakReference
@@ -51,6 +52,7 @@ class TaskExecutionActivity : AppCompatActivity() {
         override fun handleMessage(msg: Message?) {
             if (msg == null)
                 throw IllegalArgumentException("Use null object to call this method.")
+            Log.v("TaskExecutionActivity", "Received handler message: $msg")
             when (msg.what) {
                 MESSAGE_WHAT__UPDATE_PROGRESS -> {
                     val progress = msg.arg1
@@ -76,6 +78,7 @@ class TaskExecutionActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent == null)
                 throw IllegalArgumentException("Argument \"intent\" is null.")
+            Log.v("TaskExecutionActivity", "Received task-request broadcast: $intent")
             if (intent.categories.contains(CATEGORY__UPDATE_PROGRESS)) {
                 val progress = intent.getIntExtra(EXTRA__PROGRESS, 0)
                 outerClassObj.updateProgress(progress)
@@ -135,6 +138,7 @@ class TaskExecutionActivity : AppCompatActivity() {
     }
 
     private fun sendActivityInitializationFinishingBroadcast() {
+        Log.d("TaskExecutionActivity", "Sending activity initialization finishing broadcast.")
         val intentObj = Intent(ACTION__CALLBACK__ON_ACTIVITY_INITIALIZED)
         sendBroadcast(intentObj)
     }
